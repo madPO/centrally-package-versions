@@ -31,9 +31,11 @@
                         ? config.Solution
                         : Path.GetFullPath(config.Solution, Environment.CurrentDirectory);
 
-                    var aggregator = new VersionAggregator(config);
+                    using var aggregator = new VersionAggregator(config);
 
                     await aggregator.CollectAsync(source.Token);
+                    // wait console log
+                    await Task.Delay(TimeSpan.FromSeconds(3), source.Token);
                 });
         }
     }

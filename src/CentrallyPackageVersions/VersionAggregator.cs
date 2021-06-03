@@ -19,20 +19,23 @@ namespace CentrallyPackageVersions
     /// <summary>
     /// Package and version aggregator
     /// </summary>
-    public class VersionAggregator
+    public class VersionAggregator : IDisposable
     {
         private readonly Configuration _configuration;
 
         private readonly ILogger _logger;
+        
+        private readonly ILoggerFactory _loggerFactory;
 
         public VersionAggregator(Configuration configuration)
         {
             _configuration = configuration;
             _logger = NullLogger.Instance;
+            _loggerFactory = null;
 
             if (configuration.Verbose)
             {
-                var loggerFactory =
+                _loggerFactory =
                     LoggerFactory.Create(builder => builder.AddConsole(options =>
                     {
                         options.IncludeScopes = false;
@@ -40,7 +43,7 @@ namespace CentrallyPackageVersions
                         options.Format = ConsoleLoggerFormat.Default;
                     }).SetMinimumLevel(LogLevel.Debug));
 
-                _logger = loggerFactory.CreateLogger(_configuration.Solution);
+                _logger = _loggerFactory.CreateLogger(_configuration.Solution);
             }
         }
 
@@ -263,6 +266,11 @@ namespace CentrallyPackageVersions
             var workspace = MSBuildWorkspace.Create();
             workspace.LoadMetadataForReferencedProjects = true;
             return workspace.OpenSolutionAsync(_configuration.Solution, new Progress<ProjectLoadProgress>(progress => _logger.LogDebug($"{progress.Operation} {progress.FilePath}")), cancellationToken);
+        }
+
+        public void Dispose()
+        {
+            _loggerFactory?.Dispose();
         }
     }
 }
