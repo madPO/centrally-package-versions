@@ -16,6 +16,9 @@ namespace CentrallyPackageVersions
     using System.Threading.Tasks;
     using System.Xml;
 
+    /// <summary>
+    /// Package and version aggregator
+    /// </summary>
     public class VersionAggregator
     {
         private readonly Configuration _configuration;
@@ -41,6 +44,9 @@ namespace CentrallyPackageVersions
             }
         }
 
+        /// <summary>
+        /// Process all project in solution and collect packages
+        /// </summary>
         public async Task CollectAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();

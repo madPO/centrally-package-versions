@@ -19,28 +19,21 @@
                 with.IgnoreUnknownArguments = false;
                 with.HelpWriter = Console.Out;
             });
-            
-            
+
+
             await parser.ParseArguments<Configuration>(args)
                 .WithParsedAsync(async config =>
                 {
                     var source = new CancellationTokenSource();
                     source.CancelAfter(config.Timeout);
-                    try
-                    {
 
-                        config.Solution = Path.IsPathFullyQualified(config.Solution)
-                            ? config.Solution
-                            : Path.GetFullPath(config.Solution, Environment.CurrentDirectory);
+                    config.Solution = Path.IsPathFullyQualified(config.Solution)
+                        ? config.Solution
+                        : Path.GetFullPath(config.Solution, Environment.CurrentDirectory);
 
-                        var aggregator = new VersionAggregator(config);
+                    var aggregator = new VersionAggregator(config);
 
-                        await aggregator.CollectAsync(source.Token);
-                    }
-                    catch (Exception exception)
-                    {
-                        throw;
-                    }
+                    await aggregator.CollectAsync(source.Token);
                 });
         }
     }
