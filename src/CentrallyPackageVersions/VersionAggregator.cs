@@ -1,7 +1,6 @@
 namespace CentrallyPackageVersions
 {
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.MSBuild;
+    using Microsoft.Build.Construction;
     using Microsoft.Extensions.FileProviders;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +11,7 @@ namespace CentrallyPackageVersions
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Xml;
@@ -69,7 +69,7 @@ namespace CentrallyPackageVersions
             await CreatePackagePropsAsync(references, cancellationToken);
         }
 
-        private async Task CreatePackagePropsAsync(ConcurrentDictionary<string, Version> references,
+        private async Task CreatePackagePropsAsync(ConcurrentDictionary<string, Package> references,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -90,7 +90,7 @@ namespace CentrallyPackageVersions
                 var version = document.CreateAttribute("Version");
 
                 update.Value = reference.Key;
-                version.Value = reference.Value.ToString();
+                version.Value = reference.Value.Version.ToString();
                 package.Attributes.Append(update);
                 package.Attributes.Append(version);
 
@@ -134,14 +134,14 @@ namespace CentrallyPackageVersions
             }
         }
 
-        private async Task<ConcurrentDictionary<string, Version>> CollectPackageAsync(Solution solution,
+        private async Task<ConcurrentDictionary<string, Package>> CollectPackageAsync(SolutionFile solution,
             CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var projects = solution.Projects.ToArray();
+            var projects = solution.ProjectsInOrder.ToArray();
             var tasks = ArrayPool<Task>.Shared.Rent(projects.Length);
-            var references = new ConcurrentDictionary<string, Version>();
+            var references = new ConcurrentDictionary<string, Package>();
             try
             {
                 for (var i = 0; i < tasks.Length; i++)
@@ -162,7 +162,7 @@ namespace CentrallyPackageVersions
                         }
                         catch (Exception exception)
                         {
-                            _logger.LogError(exception, $"Error in project {project.FilePath}");
+                            _logger.LogError(exception, $"Error in project {project.AbsolutePath}");
                         }
                     }, cancellationToken);
                 }
@@ -177,79 +177,51 @@ namespace CentrallyPackageVersions
             }
         }
 
-        private void ProcessProject(Project project, ConcurrentDictionary<string, Version> references)
+        private void ProcessProject(ProjectInSolution project, ConcurrentDictionary<string, Package> references)
         {
-            _logger.LogDebug($"Process {project?.FilePath}");
-
-            if (project?.FilePath == null || !File.Exists(project.FilePath))
+            if (project == null || project.ProjectType != SolutionProjectType.KnownToBeMSBuildFormat)
             {
-                _logger.LogWarning($"Project {project?.FilePath} not found!");
                 return;
             }
 
-            var document = new XmlDocument();
-            document.Load(project.FilePath);
-            var items = document.GetElementsByTagName("ItemGroup");
+            _logger.LogDebug($"Process {project.AbsolutePath}");
 
-            foreach (var item in items)
+            if (project.AbsolutePath == null || !File.Exists(project.AbsolutePath))
             {
-                var node = item as XmlNode;
+                _logger.LogWarning($"Project {project?.AbsolutePath} not found!");
+                return;
+            }
 
-                if (node == null)
-                    continue;
+            var root = ProjectRootElement.Open(project.AbsolutePath);
 
-                foreach (var child in node.ChildNodes)
+            if (root == null)
+            {
+                _logger.LogWarning($"Project {project.AbsolutePath} not parsed!");
+                return;
+            }
+            
+            foreach (var item in root.ItemGroups)
+            {
+                foreach (var reference in item.Items)
                 {
-                    var reference = child as XmlNode;
-                    if (reference == null)
-                        continue;
-
-                    if (!reference.Name.Equals("PackageReference", StringComparison.CurrentCultureIgnoreCase))
-                        continue;
-
-                    string name = null;
-                    Version version = null;
-                    XmlAttribute versionAttr = null;
-
-                    if (reference.Attributes == null)
-                        continue;
-
-                    foreach (var attribute in reference.Attributes)
+                    if (!reference.ElementName.Equals("PackageReference", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        var attr = attribute as XmlAttribute;
-
-                        if (attr == null)
-                            continue;
-
-                        if (attr.Name.Equals("Include", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            name = attr.Value;
-                            continue;
-                        }
-
-                        if (attr.Name.Equals("Version", StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            var parsed = Version.TryParse(attr.Value, out version);
-
-                            if (!parsed)
-                                continue;
-
-                            versionAttr = attr;
-                        }
+                        continue;
                     }
 
-                    if (versionAttr != null)
-                        reference.Attributes.Remove(versionAttr);
+                    var package = Package.Parse(reference);
 
-                    if (name != null && version != null)
+                    if (package != null)
                     {
-                        _logger.LogDebug($"Found {name} {version}");
-                        references.AddOrUpdate(name, version, (k, v) => v > version ? v : version);
+                        _logger.LogDebug($"Found {package}");
+                        references.AddOrUpdate(package.Name, package, (k, v) => v.CompareTo(package) > 0 ? v : package);
                     }
+
+                    reference.RemoveAllChildren();
                 }
             }
 
-            document.Save(project.FilePath);
+            root.Save();
         }
 
         private void ValidatePath()
@@ -261,11 +233,11 @@ namespace CentrallyPackageVersions
                 throw new ArgumentException($"Solution {_configuration.Solution} not found!");
         }
 
-        private Task<Solution> LoadSolutionAsync(CancellationToken cancellationToken = default)
+        private Task<SolutionFile> LoadSolutionAsync(CancellationToken cancellationToken = default)
         {
-            var workspace = MSBuildWorkspace.Create();
-            workspace.LoadMetadataForReferencedProjects = true;
-            return workspace.OpenSolutionAsync(_configuration.Solution, new Progress<ProjectLoadProgress>(progress => _logger.LogDebug($"{progress.Operation} {progress.FilePath}")), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            
+            return Task.FromResult(SolutionFile.Parse(_configuration.Solution));
         }
 
         public void Dispose()
