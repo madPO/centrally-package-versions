@@ -13,19 +13,19 @@ namespace CentrallyPackageVersions
         /// </summary>
         [Option('p', "project", Required = true, HelpText = "Project name or path")]
         public string Solution { get; set; }
-        
+
         /// <summary>
         /// Show log info
         /// </summary>
         [Option('v', "verbose", Required = false, Default = false)]
         public bool Verbose { get; set; }
-        
+
         /// <summary>
         /// Package selection rule
         /// </summary>
         [Option('t', "take-version", Required = false, Default = TakeVersion.Max)]
         public TakeVersion ConflictResolve { get; set; }
-        
+
         /// <summary>
         /// Timeout
         /// </summary>
@@ -42,7 +42,7 @@ namespace CentrallyPackageVersions
         /// Select max version
         /// </summary>
         Max,
-        
+
         /// <summary>
         /// Select min version
         /// </summary>

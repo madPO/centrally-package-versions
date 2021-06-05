@@ -11,10 +11,8 @@ namespace CentrallyPackageVersions
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Xml;
 
     /// <summary>
     /// Package and version aggregator
@@ -24,7 +22,7 @@ namespace CentrallyPackageVersions
         private readonly Configuration _configuration;
 
         private readonly ILogger _logger;
-        
+
         private readonly ILoggerFactory _loggerFactory;
 
         public VersionAggregator(Configuration configuration)
@@ -74,7 +72,7 @@ namespace CentrallyPackageVersions
             var path = Path.GetDirectoryName(_configuration.Solution);
             var packageProps = ProjectRootElement.Create(Path.Combine(path, "Directory.Packages.props"));
             var itemsGroup = packageProps.AddItemGroup();
-            
+
             foreach (var reference in references.OrderBy(x => x.Key).Select(x => x.Value).ToArray())
             {
                 var item = itemsGroup.AddItem("PackageVersion", reference.Name);
@@ -187,7 +185,7 @@ namespace CentrallyPackageVersions
                 _logger.LogWarning($"Project {project.AbsolutePath} not parsed!");
                 return;
             }
-            
+
             foreach (var item in root.ItemGroups)
             {
                 foreach (var reference in item.Items)
@@ -224,7 +222,7 @@ namespace CentrallyPackageVersions
         private Task<SolutionFile> LoadSolutionAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             return Task.FromResult(SolutionFile.Parse(_configuration.Solution));
         }
 

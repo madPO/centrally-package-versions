@@ -13,12 +13,12 @@ namespace CentrallyPackageVersions
         /// Name of package
         /// </summary>
         public string Name { get; private set; }
-        
+
         /// <summary>
         /// Version of package
         /// </summary>
         public Version Version { get; private set; }
-        
+
         /// <summary>
         /// Other attributes
         /// </summary>
@@ -40,7 +40,7 @@ namespace CentrallyPackageVersions
                     {
                         continue;
                     }
-                    
+
                     if (item.ElementName.Equals("Version", StringComparison.CurrentCultureIgnoreCase))
                     {
                         package.Version = Version.Parse(item.Value);
@@ -57,7 +57,7 @@ namespace CentrallyPackageVersions
             {
                 package = null;
             }
-            
+
             return package;
         }
 
@@ -111,7 +111,7 @@ namespace CentrallyPackageVersions
                 return false;
             }
 
-            return Equals((Package) obj);
+            return Equals((Package)obj);
         }
 
         /// <inheritdoc />
