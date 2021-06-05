@@ -22,7 +22,7 @@ namespace CentrallyPackageVersions
         /// <summary>
         /// Other attributes
         /// </summary>
-        public IReadOnlyCollection<ProjectMetadataElement> Metadata { get; private set; }
+        public IReadOnlyCollection<ProjectMetadataElement> Attributes { get; private set; }
 
         /// <summary>
         /// Parse <see cref="ProjectItemElement"/> to <see cref="Package"/>
@@ -34,19 +34,24 @@ namespace CentrallyPackageVersions
             {
                 package.Name = element.Include;
                 var metadata = new List<ProjectMetadataElement>();
-                foreach (var meta in element.Metadata)
+                foreach (var item in element.Metadata)
                 {
-                    if (meta.ElementName.Equals("Version", StringComparison.CurrentCultureIgnoreCase))
+                    if (!item.ExpressedAsAttribute)
                     {
-                        package.Version = Version.Parse(meta.Value);
+                        continue;
+                    }
+                    
+                    if (item.ElementName.Equals("Version", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        package.Version = Version.Parse(item.Value);
                     }
                     else
                     {
-                        metadata.Add(meta);
+                        metadata.Add(item);
                     }
                 }
 
-                package.Metadata = metadata;
+                package.Attributes = metadata;
             }
             catch
             {

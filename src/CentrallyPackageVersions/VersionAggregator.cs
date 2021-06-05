@@ -66,39 +66,27 @@ namespace CentrallyPackageVersions
 
             ClearProps();
             await CreateBuildPropsAsync(cancellationToken);
-            await CreatePackagePropsAsync(references, cancellationToken);
+            CreatePackageProps(references);
         }
 
-        private async Task CreatePackagePropsAsync(ConcurrentDictionary<string, Package> references,
-            CancellationToken cancellationToken = default)
+        private void CreatePackageProps(ConcurrentDictionary<string, Package> references)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var path = Path.GetDirectoryName(_configuration.Solution);
-            var newPath = Path.Combine(path, "Directory.Packages.props");
-
-            await using var stream = File.Open(newPath, FileMode.CreateNew);
-            var document = new XmlDocument();
-
-            var project = document.CreateElement("Project");
-            document.AppendChild(project);
-            var group = document.CreateElement("ItemGroup");
-            foreach (var reference in references.OrderBy(x => x.Key).ToArray())
+            var packageProps = ProjectRootElement.Create(Path.Combine(path, "Directory.Packages.props"));
+            var itemsGroup = packageProps.AddItemGroup();
+            
+            foreach (var reference in references.OrderBy(x => x.Key).Select(x => x.Value).ToArray())
             {
-                var package = document.CreateElement("PackageVersion");
-                var update = document.CreateAttribute("Include");
-                var version = document.CreateAttribute("Version");
+                var item = itemsGroup.AddItem("PackageVersion", reference.Name);
+                item.AddMetadata("Version", reference.Version.ToString(), true);
 
-                update.Value = reference.Key;
-                version.Value = reference.Value.Version.ToString();
-                package.Attributes.Append(update);
-                package.Attributes.Append(version);
-
-                group.AppendChild(package);
+                foreach (var element in reference.Attributes)
+                {
+                    item.AddMetadata(element.Name, element.Value, true);
+                }
             }
 
-            project.AppendChild(group);
-            document.Save(stream);
+            packageProps.Save();
         }
 
         private async Task CreateBuildPropsAsync(CancellationToken cancellationToken = default)
