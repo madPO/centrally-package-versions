@@ -27,7 +27,7 @@ namespace CentrallyPackageVersions
 
         public VersionAggregator(Configuration configuration)
         {
-            _configuration = configuration;
+            _configuration = configuration ?? throw new ArgumentException(nameof(configuration));
             _logger = NullLogger.Instance;
             _loggerFactory = null;
 
@@ -48,7 +48,7 @@ namespace CentrallyPackageVersions
         /// <summary>
         /// Process all project in solution and collect packages
         /// </summary>
-        public async Task CollectAsync(CancellationToken cancellationToken = default)
+        public Task CollectAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -56,12 +56,22 @@ namespace CentrallyPackageVersions
 
             _logger.LogDebug($"Loading solution {_configuration.Solution}");
 
-            var solution = await LoadSolutionAsync(cancellationToken);
+            var solution = SolutionFile.Parse(_configuration.Solution);
+
+            if (solution == null)
+            {
+                _logger.LogError("Solution load failed!");
+                return Task.CompletedTask;
+            }
 
             _logger.LogDebug("solution loaded.");
 
-            var references = await CollectPackageAsync(solution, cancellationToken);
+            return CollectInnerAsync(solution, cancellationToken);
+        }
 
+        private async Task CollectInnerAsync(SolutionFile solution, CancellationToken cancellationToken)
+        {
+            var references = await CollectPackageAsync(solution, cancellationToken);
             ClearProps();
             await CreateBuildPropsAsync(cancellationToken);
             CreatePackageProps(references);
@@ -70,6 +80,9 @@ namespace CentrallyPackageVersions
         private void CreatePackageProps(ConcurrentDictionary<string, Package> references)
         {
             var path = Path.GetDirectoryName(_configuration.Solution);
+            if (path == null)
+                throw new ArgumentException(nameof(_configuration.Solution));
+            
             var packageProps = ProjectRootElement.Create(Path.Combine(path, "Directory.Packages.props"));
             var itemsGroup = packageProps.AddItemGroup();
 
@@ -94,6 +107,9 @@ namespace CentrallyPackageVersions
             var provider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly());
             var path = Path.GetDirectoryName(_configuration.Solution);
 
+            if (path == null)
+                throw new ArgumentException(nameof(_configuration.Solution));
+
             _logger.LogDebug("Create Directory.Build.props");
 
             await using var original = provider.GetFileInfo("content/Directory.Build.template").CreateReadStream();
@@ -105,17 +121,20 @@ namespace CentrallyPackageVersions
         {
             var path = Path.GetDirectoryName(_configuration.Solution);
 
+            if (path == null)
+                throw new ArgumentException(nameof(_configuration.Solution));
+
             var buildProps = Path.Combine(path, "Directory.Build.props");
             if (File.Exists(buildProps))
             {
-                _logger.LogDebug("Delete Directory.Build.props");
+                _logger.LogWarning("Delete Directory.Build.props");
                 File.Delete(buildProps);
             }
 
             var packagesProps = Path.Combine(path, "Directory.Packages.props");
             if (File.Exists(packagesProps))
             {
-                _logger.LogDebug("Delete Directory.Packages.props");
+                _logger.LogWarning("Delete Directory.Packages.props");
                 File.Delete(Path.Combine(path, "Directory.Packages.props"));
             }
         }
@@ -125,7 +144,14 @@ namespace CentrallyPackageVersions
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var projects = solution.ProjectsInOrder.ToArray();
+            var projects = solution.ProjectsInOrder?.ToArray();
+
+            if (projects == null || projects.Length == 0)
+            {
+                _logger.LogDebug("Empty project list.");
+                return null;
+            }
+
             var tasks = ArrayPool<Task>.Shared.Rent(projects.Length);
             var references = new ConcurrentDictionary<string, Package>();
             try
@@ -165,8 +191,15 @@ namespace CentrallyPackageVersions
 
         private void ProcessProject(ProjectInSolution project, ConcurrentDictionary<string, Package> references)
         {
-            if (project == null || project.ProjectType != SolutionProjectType.KnownToBeMSBuildFormat)
+            if (project == null)
             {
+                _logger.LogDebug("Skip empty project");
+                return;
+            }
+            
+            if (project is not {ProjectType: SolutionProjectType.KnownToBeMSBuildFormat})
+            {
+                _logger.LogDebug($"Skip unknown project {project.AbsolutePath}");
                 return;
             }
 
@@ -174,7 +207,7 @@ namespace CentrallyPackageVersions
 
             if (project.AbsolutePath == null || !File.Exists(project.AbsolutePath))
             {
-                _logger.LogWarning($"Project {project?.AbsolutePath} not found!");
+                _logger.LogWarning($"Project {project.AbsolutePath} not found!");
                 return;
             }
 
@@ -188,8 +221,14 @@ namespace CentrallyPackageVersions
 
             foreach (var item in root.ItemGroups)
             {
+                if(item == null)
+                    continue;
+                
                 foreach (var reference in item.Items)
                 {
+                    if(reference == null)
+                        continue;
+                    
                     if (!reference.ElementName.Equals("PackageReference", StringComparison.CurrentCultureIgnoreCase))
                     {
                         continue;
@@ -200,9 +239,10 @@ namespace CentrallyPackageVersions
                     if (package != null)
                     {
                         _logger.LogDebug($"Found {package}");
-                        references.AddOrUpdate(package.Name, package, (k, v) => v.CompareTo(package) > 0 ? v : package);
+                        references.AddOrUpdate(package.Name, package, (_, v) => v.CompareTo(package) > 0 ? v : package);
                     }
 
+                    // todo: delete only attributes 
                     reference.RemoveAllChildren();
                 }
             }
@@ -212,18 +252,11 @@ namespace CentrallyPackageVersions
 
         private void ValidatePath()
         {
-            if (!_configuration.Solution.EndsWith(".sln"))
+            if (!_configuration.Solution.EndsWith(".sln", StringComparison.CurrentCultureIgnoreCase))
                 throw new ArgumentException($"Path {_configuration.Solution} is not a solution!");
 
             if (!File.Exists(_configuration.Solution))
                 throw new ArgumentException($"Solution {_configuration.Solution} not found!");
-        }
-
-        private Task<SolutionFile> LoadSolutionAsync(CancellationToken cancellationToken = default)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return Task.FromResult(SolutionFile.Parse(_configuration.Solution));
         }
 
         public void Dispose()

@@ -8,6 +8,7 @@
         <ToolCommandName>centrally-versions</ToolCommandName>
         <PackageOutputPath>../../nupkg</PackageOutputPath>
         <AssemblyVersion>0.1.0-alpha</AssemblyVersion>
+        <LangVersion>9.0</LangVersion>
 
         <Title>CentrallyPackageVersion.Tools</Title>
         <Description>Prepare solution for centrally package version</Description>
