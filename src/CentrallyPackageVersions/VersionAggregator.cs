@@ -82,7 +82,7 @@ namespace CentrallyPackageVersions
             var path = Path.GetDirectoryName(_configuration.Solution);
             if (path == null)
                 throw new ArgumentException(nameof(_configuration.Solution));
-            
+
             var packageProps = ProjectRootElement.Create(Path.Combine(path, "Directory.Packages.props"));
             var itemsGroup = packageProps.AddItemGroup();
 
@@ -196,7 +196,7 @@ namespace CentrallyPackageVersions
                 _logger.LogDebug("Skip empty project");
                 return;
             }
-            
+
             if (project is not {ProjectType: SolutionProjectType.KnownToBeMSBuildFormat})
             {
                 _logger.LogDebug($"Skip unknown project {project.AbsolutePath}");
@@ -221,14 +221,14 @@ namespace CentrallyPackageVersions
 
             foreach (var item in root.ItemGroups)
             {
-                if(item == null)
+                if (item == null)
                     continue;
-                
+
                 foreach (var reference in item.Items)
                 {
-                    if(reference == null)
+                    if (reference == null)
                         continue;
-                    
+
                     if (!reference.ElementName.Equals("PackageReference", StringComparison.CurrentCultureIgnoreCase))
                     {
                         continue;
@@ -239,7 +239,19 @@ namespace CentrallyPackageVersions
                     if (package != null)
                     {
                         _logger.LogDebug($"Found {package}");
-                        references.AddOrUpdate(package.Name, package, (_, v) => v.CompareTo(package) > 0 ? v : package);
+                        references.AddOrUpdate(package.Name, package, (_, v) =>
+                        {
+                            switch (_configuration.ConflictResolve)
+                            {
+                                case TakeVersion.Max:
+                                    return v.CompareTo(package) > 0 ? v : package;
+                                case TakeVersion.Min:
+                                    return v.CompareTo(package) < 0 ? v : package;
+                                default:
+                                    // take first by default
+                                    return v;
+                            }
+                        });
                     }
 
                     // todo: delete only attributes 
