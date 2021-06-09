@@ -10,29 +10,30 @@
         <AssemblyVersion>0.1.1-alpha</AssemblyVersion>
         <LangVersion>9.0</LangVersion>
 
-        <Title>CentrallyPackageVersion.Tools</Title>
+        <PackageId>CentrallyPackageVersion.Tools</PackageId>
+        <PackageVersion>$(AssemblyVersion)</PackageVersion>
+        <Authors>Zor'kin Simon</Authors>
         <Description>Prepare solution for centrally package version</Description>
-        <Deterministic>false</Deterministic>
+        <Copyright>Copyright (c) Zor'kin Simon</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/madpo/centrally-package-versions</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/madpo/centrally-package-versions.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Tools;Centrally;Package;Version</PackageTags>        
+        <Title>$(PackageId)</Title>
+        <Deterministic>false</Deterministic>        
         <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
         <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
         <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-        <RepositoryUrl>https://github.com/madpo/centrally-package-versions.git</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/madpo/centrally-package-versions</PackageProjectUrl>
-        <RepositoryType>git</RepositoryType>
-        <Copyright>Copyright (c) Zor'kin Simon</Copyright>
-        <Authors>Zor'kin Simon</Authors>
         <Owners>Zor'kin Simon</Owners>
-        <PackageTags>Tools;Centrally;Package;Version</PackageTags>
-        <PackageId>$(Title)</PackageId>
         <AssemblyTitle>$(Title)</AssemblyTitle>
         <AssemblyDescription>$(Description)</AssemblyDescription>
         <AssemblyCompany>$(Authors)</AssemblyCompany>
-        <AssemblyCopyright>$(Copyright)</AssemblyCopyright>
+        <AssemblyCopyright>$(Copyright)</AssemblyCopyright>        
         <ComVisible>false</ComVisible>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <AssemblyFileVersion>$(AssemblyVersion)</AssemblyFileVersion>
         <AssemblyInformationalVersion>$(AssemblyVersion)</AssemblyInformationalVersion>
-        <PackageVersion>$(AssemblyVersion)</PackageVersion>
         <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     </PropertyGroup>
 
