@@ -23,7 +23,7 @@ namespace CentrallyPackageVersions
         /// <summary>
         /// Package selection rule
         /// </summary>
-        [Option('t', "take-version", Required = false, Default = TakeVersion.Max)]
+        [Option('r', "resolve", Required = false, Default = TakeVersion.Max)]
         public TakeVersion ConflictResolve { get; set; }
 
         /// <summary>
