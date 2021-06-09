@@ -7,7 +7,7 @@
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>centrally-versions</ToolCommandName>
         <PackageOutputPath>../../nupkg</PackageOutputPath>
-        <AssemblyVersion>0.1.0-alpha</AssemblyVersion>
+        <AssemblyVersion>0.1.1-alpha</AssemblyVersion>
         <LangVersion>9.0</LangVersion>
 
         <Title>CentrallyPackageVersion.Tools</Title>
@@ -16,8 +16,8 @@
         <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
         <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
         <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-        <RepositoryUrl>https://github.com/madPO/centrally-package-versions.git</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/madPO/centrally-package-versions</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/madpo/centrally-package-versions.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/madpo/centrally-package-versions</PackageProjectUrl>
         <RepositoryType>git</RepositoryType>
         <Copyright>Copyright (c) Zor'kin Simon</Copyright>
         <Authors>Zor'kin Simon</Authors>
@@ -33,19 +33,15 @@
         <AssemblyFileVersion>$(AssemblyVersion)</AssemblyFileVersion>
         <AssemblyInformationalVersion>$(AssemblyVersion)</AssemblyInformationalVersion>
         <PackageVersion>$(AssemblyVersion)</PackageVersion>
+        <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.8.0"/>
-        <PackageReference Include="Microsoft.Build" Version="16.10.0">
-            <ExcludeAssets>runtime</ExcludeAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.Build" Version="16.10.0" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.15"/>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.15"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.15"/>
-        <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.9.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.9.0"/>
     </ItemGroup>
 
     <ItemGroup>
