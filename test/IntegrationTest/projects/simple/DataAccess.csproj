@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Castle.Windsor" Version="5.0.0" />
+      <PackageReference Include="Castle.Windsor.MsDependencyInjection" Version="3.3.1" />
+        <PackageReference Include="Dapper" Version="1.60.6" />
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="FluentMigrator" Version="3.2.1" />
+      <PackageReference Include="FluentMigrator.Runner" Version="3.2.1" />
+      <PackageReference Include="FluentMigrator.Runner.Postgres" Version="3.2.1" />
+      <PackageReference Include="Npgsql" Version="4.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Abstract\Abstract.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Migrations\SqlFunction\CreateDateFunc.sql" />
+      <None Remove="Migrations\SqlFunction\EditDateFunc.sql" />
+    </ItemGroup>
+
+</Project>
