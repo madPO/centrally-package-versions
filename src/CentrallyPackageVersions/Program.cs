@@ -18,10 +18,6 @@ await parser.ParseArguments<Configuration>(args)
         var source = new CancellationTokenSource();
         source.CancelAfter(config.Timeout);
 
-        config.Solution = Path.IsPathFullyQualified(config.Solution)
-            ? config.Solution
-            : Path.GetFullPath(config.Solution, Environment.CurrentDirectory);
-
         using var aggregator = new VersionAggregator(config);
 
         await aggregator.CollectAsync(source.Token);

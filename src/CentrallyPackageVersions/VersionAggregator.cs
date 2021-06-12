@@ -30,6 +30,10 @@ namespace CentrallyPackageVersions
             _configuration = configuration ?? throw new ArgumentException(nameof(configuration));
             _logger = NullLogger.Instance;
             _loggerFactory = null;
+            
+            _configuration.Solution = Path.IsPathFullyQualified(_configuration.Solution)
+                ? _configuration.Solution
+                : Path.GetFullPath(_configuration.Solution, Environment.CurrentDirectory);
 
             if (configuration.Verbose)
             {
