@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentrallyPackageVersions", "CentrallyPackageVersions\CentrallyPackageVersions.csproj", "{198E031C-B6EF-44AF-9330-5C3CBA181BBD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CentrallyPackageVersions", "src\CentrallyPackageVersions\CentrallyPackageVersions.csproj", "{198E031C-B6EF-44AF-9330-5C3CBA181BBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "..\test\IntegrationTest\IntegrationTest.csproj", "{E4E7BE07-FA82-40D9-B841-1C1B1407DEF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "test\IntegrationTest\IntegrationTest.csproj", "{E4E7BE07-FA82-40D9-B841-1C1B1407DEF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
