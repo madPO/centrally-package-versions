@@ -7,11 +7,9 @@
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>centrally-versions</ToolCommandName>
         <PackageOutputPath>../../nupkg</PackageOutputPath>
-        <AssemblyVersion>0.1.1-alpha</AssemblyVersion>
         <LangVersion>9.0</LangVersion>
 
         <PackageId>CentrallyPackageVersion.Tools</PackageId>
-        <PackageVersion>$(AssemblyVersion)</PackageVersion>
         <Authors>Zor'kin Simon</Authors>
         <Description>Prepare solution for centrally package version</Description>
         <Copyright>Copyright (c) Zor'kin Simon</Copyright>
@@ -32,22 +30,24 @@
         <AssemblyCopyright>$(Copyright)</AssemblyCopyright>        
         <ComVisible>false</ComVisible>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <AssemblyFileVersion>$(AssemblyVersion)</AssemblyFileVersion>
-        <AssemblyInformationalVersion>$(AssemblyVersion)</AssemblyInformationalVersion>
         <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.8.0"/>
+        <PackageReference Include="CommandLineParser" Version="2.8.0" />
         <PackageReference Include="Microsoft.Build" Version="16.10.0" />
-        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.15"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.15"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.15"/>
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.15" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.15" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.15" />
+        <PackageReference Include="MinVer" Version="2.5.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="content\Directory.Build.template"/>
-        <EmbeddedResource Include="content\Directory.Build.template"/>
+        <None Remove="content\Directory.Build.template" />
+        <EmbeddedResource Include="content\Directory.Build.template" />
     </ItemGroup>
 
 </Project>
