@@ -30,7 +30,7 @@ namespace CentrallyPackageVersions
             _configuration = configuration ?? throw new ArgumentException(nameof(configuration));
             _logger = NullLogger.Instance;
             _loggerFactory = null;
-            
+
             _configuration.Solution = Path.IsPathFullyQualified(_configuration.Solution)
                 ? _configuration.Solution
                 : Path.GetFullPath(_configuration.Solution, Environment.CurrentDirectory);
@@ -256,10 +256,21 @@ namespace CentrallyPackageVersions
                                     return v;
                             }
                         });
-                    }
 
-                    // todo: delete only attributes 
-                    reference.RemoveAllChildren();
+                        var versionAttribute = reference.Metadata.Where(x =>
+                                x.Name.Equals("Version", StringComparison.CurrentCultureIgnoreCase))
+                            .SingleOrDefault();
+
+                        if (versionAttribute != null)
+                        {
+                            reference.RemoveChild(versionAttribute);
+                        }
+
+                        foreach (var attribute in package.Attributes)
+                        {
+                            reference.RemoveChild(attribute);
+                        }
+                    }
                 }
             }
 
