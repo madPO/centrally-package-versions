@@ -11,7 +11,7 @@ namespace CentrallyPackageVersions
         /// <summary>
         /// Solution path
         /// </summary>
-        [Option('p', "project", Required = true, HelpText = "Project name or path")]
+        [Option('s', "solution", Required = true, HelpText = "Solution name or path")]
         public string Solution { get; set; }
 
         /// <summary>
