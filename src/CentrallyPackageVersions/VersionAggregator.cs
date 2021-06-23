@@ -223,6 +223,36 @@ namespace CentrallyPackageVersions
                 return;
             }
 
+            var requirementVersion = new[] {"netcoreapp3.1", "net5.0"};
+            string[] targets = null;
+            
+            foreach (var groups in root.PropertyGroups)
+            {
+                foreach (var projectElement in groups.Children)
+                {
+                    var property = (ProjectPropertyElement) projectElement;
+
+                    if (property == null)
+                    {
+                        continue;
+                    }
+                    
+                    if (!property.ElementName.Equals("TargetFramework", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    targets = property.Value.Split(';');
+                    break;
+                }
+            }
+
+            if (targets == null || !targets.Intersect(requirementVersion).Any())
+            {
+                _logger.LogError($"Project '{project.AbsolutePath}' not compatible with centrally package version!");
+                return;
+            }
+
             foreach (var item in root.ItemGroups)
             {
                 if (item == null)
