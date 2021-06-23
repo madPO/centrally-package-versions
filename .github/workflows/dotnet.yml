@@ -24,3 +24,5 @@ jobs:
       with:
           PROJECT_FILE_PATH: src/CentrallyPackageVersions/CentrallyPackageVersions.csproj
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          VERSION_STATIC: true
+          TAG_COMMIT: false
